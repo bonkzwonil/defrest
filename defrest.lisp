@@ -31,7 +31,7 @@
 (defpackage defrest 
   (:use :cl :hunchentoot :cl-ppcre :split-sequence) 
   (:nicknames rest)
-  (:export defrest create-rest-table-dispatcher))
+  (:export defrest create-rest-table-dispatcher undefrest))
 
 (in-package :rest)
 
@@ -151,10 +151,15 @@
     `(setf (gethash ,pattern *rest-dispatcher-table*)
 	   (create-rest-dispatcher ,pattern ,method 
 				   (lambda (map)
+				     (declare (ignore map)) ; we dont want a not-used warning on empty lambda-list defrest's
 				     (let ,letlist
 				       ,@body))))))
 			     
 
+
+(defun undefrest (pattern)
+  "Removes the rest service with the exact PATTERN from the rest-table-dispatcher"
+  (remhash pattern *rest-dispatcher-table*))
 
 (defun create-rest-table-dispatcher (&optional (table *rest-dispatcher-table*))
   "builds a rest table dispatcher which can be added to the hunchentoot dispatchers 
