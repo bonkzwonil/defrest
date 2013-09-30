@@ -7,7 +7,7 @@
 
 
 
-`defrest' provides a very easy way to expose functions via REST interfaces with the hunchentoot webserver.
+`defrest` provides a very easy way to expose functions via REST interfaces with the hunchentoot webserver.
 
 Exposing a REST Interface is as simple as:
 
