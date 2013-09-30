@@ -9,14 +9,14 @@ Copyright (C) 2013 by Mathias Menzel-Nielsen
 
 Exposing a REST Interface is as simple as:
 
-```
+```Common Lisp
 (defrest "/hello" :GET ()
 	 "Hello World!")
 ```
 
 or more sophisticated with embedded Path-Parameters
 
-```
+```Common Lisp
 (defrest "/greet/{name:[.+]}" :GET (name)
 	 (format nil "Hello ~a" name))
 ```
@@ -35,7 +35,10 @@ You can add defined webservices to hunchentoot in two different ways:
    just add (create-rest-table-dispatcher) to the hunchentoot dispatcher. 
    Like this:
 
+```Common Lisp
    (push (create-ajax-table-dispatcher) hunchentoot:*dispatch-table*)
+```
+
 
    and you are done
 
@@ -43,9 +46,11 @@ You can add defined webservices to hunchentoot in two different ways:
     defrest returns a dispatcher which you can chain into hunchentoot.
     However, you will loose the ability to defrest on toplevel, that way...
 
+```Common Lisp
     (setq hunchentoot:*dispatch-table*
         (list (defajax "/square/{number:[0-9]+}" :GET (number) (* number number))))
 
+```
 
 
 
