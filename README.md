@@ -9,15 +9,17 @@ Copyright (C) 2013 by Mathias Menzel-Nielsen
 
 Exposing a REST Interface is as simple as:
 
-
+...
 (defrest "/hello" :GET ()
 	 "Hello World!")
+...
 
 or more sophisticated with embedded Path-Parameters
 
+...
 (defrest "/greet/{name:[.+]}" :GET (name)
 	 (format nil "Hello ~a" name))
-
+...
 
 This will build a dispatcher which will listen to urls with the regexp "/greet/.+" , bind the (.+) to the 'name' variable , runs the body with it and sends the result.
 Path-Parameters are encoded as Template blocks {VARNAME:REGEXP}. defrest will do all the parsing and matching for you.
