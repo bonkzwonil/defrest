@@ -128,9 +128,12 @@
 
 
 (defmacro defrest (pattern method varlist &body body)
-  "Defines a new REST Method. It will listen to urls which match pattern, have all template blocks replaced and binds variables to varlist.
+  "Defines a new REST Method. It will listen to urls which match pattern, 
+   have all template blocks replaced and binds variables to varlist.
    
-   Returns a dispatcher method, which can be put in the hunchentoot dispatcher table AND creates an entry in the *rest-dispatcher-table* to be able to defrest on toplevel.
+   Returns a dispatcher method, which can be put in the hunchentoot dispatcher 
+   table AND creates an entry in the *rest-dispatcher-table* to be able to defrest 
+   on toplevel.
 
    Usage Example:
 
@@ -138,6 +141,7 @@
           (format nil \"Hello  ~a\" name))
 
    will create a Hello World Dispatcher which will greet GET /greet/Bonk with 'Hello Bonk'"
+
   (let ((letlist (loop for var in varlist collect `(,var (gethash (symbol-name (quote ,var)) map)))))
     `(setf (gethash ,pattern *rest-dispatcher-table*)
 	  (create-rest-dispatcher ,pattern ,method 
@@ -148,7 +152,8 @@
 
 
 (defun create-rest-table-dispatcher (&optional (table *rest-dispatcher-table*))
-  "builds a rest table dispatcher which can be added to the hunchentoot dispatchers to handle all defrest'ed functions"
+  "builds a rest table dispatcher which can be added to the hunchentoot dispatchers 
+   to handle all defrest'ed functions"
   #'(lambda (request)
       (loop for dispatcher being the hash-values of table do
 	   (let ((fun (funcall dispatcher request)))

@@ -21,7 +21,7 @@ or more sophisticated with embedded Path-Parameters and json response
 ```lisp
 (defrest "/length/{str:.+}" :GET (str)
 	(with-output-to-string (*standard-output*) 
-	 (cl-json:encode-json `((name . ,str) (length . ,(length str))))))
+	 (cl-json:encode-json (list (cons 'name  str) (cons 'length (length str))))))
 ```
 
 This will build a dispatcher which will listen to urls with the regexp `"/greet/.+"` , bind the (.+) to the `name` variable , runs the body with it and sends the result.
