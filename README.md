@@ -25,7 +25,7 @@ or more sophisticated with embedded Path-Parameters and json response
 	 (cl-json:encode-json (list (cons 'name  str) (cons 'length (length str))))))
 ```
 
-This will build a dispatcher which will listen to urls with the regexp `"/length/.+"` , bind the (.+) to the `name` variable , runs the body with it and sends the result.
+This will build a dispatcher which will listen to urls with the regexp `"/length/.+"` , bind the (.+) to the `str` variable , runs the body with it and sends the result.
 Path-Parameters are encoded as Template blocks {VARNAME:REGEXP}. defrest will do all the parsing and matching for you.
 Additionally the hunchentoot handler environment is available, so you can access `hunchentoot:*request*` and so on.
 
