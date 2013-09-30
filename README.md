@@ -32,6 +32,8 @@ Additionally the hunchentoot handler environment is available, so you can access
 The defrest body should return a string. All other values are format~a'ed to it.
 
 
+The Method can be replaced with `:PUT :POST :DELETE` etcpp
+
 
 You can add defined webservices to hunchentoot in two different ways:
 
