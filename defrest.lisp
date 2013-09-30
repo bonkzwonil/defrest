@@ -153,7 +153,7 @@
     `(setf (gethash ,pattern *rest-dispatcher-table*)
 	   (create-rest-dispatcher ,pattern ,method 
 				   (lambda (map)
-				     (declare (ignore map)) ; we dont want a not-used warning on empty lambda-list defrest's
+				     (declare (ignorable map)) ; we dont want a not-used warning on empty lambda-list defrest's
 				     (let ,letlist
 				       ,@body))))))
 			     
