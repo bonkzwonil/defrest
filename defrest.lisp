@@ -1,3 +1,4 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
 ;; Copyright (c) 2013, Mathias Menzel-Nielsen
 ;; All rights reserved.
 
@@ -25,6 +26,7 @@
 ;; of the authors and should not be interpreted as representing official policies, 
 ;; either expressed or implied, of the FreeBSD Project.
 
+(in-package :cl-user)
 
 (defpackage defrest (:use :cl :hunchentoot :cl-ppcre :split-sequence) (:nicknames rest))
 
