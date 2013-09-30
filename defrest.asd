@@ -12,6 +12,6 @@
   :depends-on (:hunchentoot
 	       :cl-ppcre
 	       :split-sequence)
-  :components ((:file "defrest.lisp")))
+  :components ((:file "defrest")))
   
   

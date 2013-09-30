@@ -14,11 +14,12 @@ Exposing a REST Interface is as simple as:
 	 "Hello World!")
 ```
 
-or more sophisticated with embedded Path-Parameters
+or more sophisticated with embedded Path-Parameters and json response
 
 ```lisp
-(defrest "/greet/{name:[.+]}" :GET (name)
-	 (format nil "Hello ~a" name))
+(defrest "/length/{str:.+}" :GET (str)
+	(with-output-to-string (*standard-output*) 
+	 (cl-json:encode-json `((name . ,str) (length . ,(length str))))))
 ```
 
 This will build a dispatcher which will listen to urls with the regexp "/greet/.+" , bind the (.+) to the 'name' variable , runs the body with it and sends the result.
@@ -51,6 +52,12 @@ You can add defined webservices to hunchentoot in two different ways:
         (list (defajax "/square/{number:[0-9]+}" :GET (number) (* number number))))
 
 ```
+
+
+
+
+
+See minimal-example.lisp  for exactly what its called
 
 
 
