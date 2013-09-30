@@ -28,7 +28,10 @@
 
 (in-package :cl-user)
 
-(defpackage defrest (:use :cl :hunchentoot :cl-ppcre :split-sequence) (:nicknames rest))
+(defpackage defrest 
+  (:use :cl :hunchentoot :cl-ppcre :split-sequence) 
+  (:nicknames rest)
+  (:export defrest create-rest-table-dispatcher))
 
 (in-package :rest)
 
