@@ -147,7 +147,9 @@
 
    will create a Hello World Dispatcher which will greet GET /greet/Bonk with 'Hello Bonk'"
 
-  (let ((letlist (loop for var in varlist collect `(,var (gethash (symbol-name (quote ,var)) map)))))
+  (let ((letlist (mapcar #'(lambda (var)
+			     `(,var (gethash (symbol-name (quote ,var)) map)))
+			 varlist)))
     `(setf (gethash ,pattern *rest-dispatcher-table*)
 	   (create-rest-dispatcher ,pattern ,method 
 				   (lambda (map)
