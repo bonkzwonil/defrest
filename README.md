@@ -53,7 +53,7 @@ You can add defined webservices to hunchentoot in two different ways:
 
     ```lisp
     (setq hunchentoot:*dispatch-table*
-        (list (defrest "/square/{number:[0-9]+}" :GET (number) (* number number))))
+        (list (defrest "/sqrt/{number:[0-9]+}" :GET (number) (sqrt (parse-integer number)))))
 
     ```
 
