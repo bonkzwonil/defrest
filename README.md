@@ -40,7 +40,7 @@ You can add defined webservices to hunchentoot in two different ways:
    Like this:
 
     ```lisp
-   (push (create-ajax-table-dispatcher) hunchentoot:*dispatch-table*)
+   (push (create-rest-table-dispatcher) hunchentoot:*dispatch-table*)
     ```
 
 
@@ -53,7 +53,7 @@ You can add defined webservices to hunchentoot in two different ways:
 
     ```lisp
     (setq hunchentoot:*dispatch-table*
-        (list (defajax "/square/{number:[0-9]+}" :GET (number) (* number number))))
+        (list (defrest "/square/{number:[0-9]+}" :GET (number) (* number number))))
 
     ```
 
