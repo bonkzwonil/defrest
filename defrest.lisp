@@ -38,6 +38,7 @@
     (do-matches-as-strings (match "{([^\{]+):([^\}]+)}*" schema) 
       (multiple-value-bind (n/a found)
 	  (scan-to-strings "{(.+):(.+)}" match)
+	(declare (ignore n/a))
 	(setf (gethash (aref found 0) map) (aref found 1))))
     map))
 
@@ -47,6 +48,7 @@
     (do-matches-as-strings (match "{([^\{]+):([^\}]+)}*" schema) 
       (multiple-value-bind (n/a found)
 	  (scan-to-strings "{(.+):(.+)}" match)
+	(declare (ignore n/a))
 	(push (list :key (aref found 0) :regexp (aref found 1)) lst)))
     (reverse lst)))
 
@@ -66,8 +68,7 @@
 
 (defun split-on-placeholders (uri)
   "splits a sequence on the template placeholder blocks"
-  (let ((lst)
-	(split-symbol #\U00046A76)) ;;could be anything
+  (let ((split-symbol #\U00046A76)) ;;could be anything
     (split-sequence split-symbol 
 		    (regex-replace-all "{[^\{]+}" uri (format nil "~c" split-symbol)))))
 
@@ -99,6 +100,7 @@
 		 (setf (gethash key map) (subseq uri start end))
 		 (setf uri (subseq uri end))))
 	     (multiple-value-bind (start end) (scan token uri)  ;;else
+	       (declare (ignore start))
 	       (setf uri (subseq uri end)))))
     map))
   
@@ -144,7 +146,7 @@
 
   (let ((letlist (loop for var in varlist collect `(,var (gethash (symbol-name (quote ,var)) map)))))
     `(setf (gethash ,pattern *rest-dispatcher-table*)
-	  (create-rest-dispatcher ,pattern ,method 
+	   (create-rest-dispatcher ,pattern ,method 
 				   (lambda (map)
 				     (let ,letlist
 				       ,@body))))))
