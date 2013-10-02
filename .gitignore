@@ -1,2 +1,5 @@
 #emacs backups
-.*~
+*~
+#sbcl compiled files
+*.fasl
+
