@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(defpackage :defrest-test (:use :cl :defrest :fiveam :drakma :hunchentoot))
+(defpackage :defrest-test (:use :cl :defrest :fiveam :hunchentoot)) ;; and :drakma but it clashes with hunchentoot namespace
 
 (in-package :defrest-test)
 
