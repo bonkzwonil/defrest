@@ -114,10 +114,14 @@
     
 (defun create-rest-dispatcher (schema method fun)
   "Creates a hunchentoot compatible dispatcher for a given url SCHEMA and request METHOD which will call the FUN function on match and hands over a parameter map hashtable"
-  (let* ((uri (schema->regexpurl schema))
-  	 (dispatcher 
-	  (create-regex-dispatcher uri 
-	   #'(lambda ()
+  (let* ((uri (schema->regexpurl schema)))
+    #'(lambda (request)
+	(when (and
+	       (equal method
+		      (request-method request))
+	       (scan uri (request-uri request)))
+	  #'(lambda () ;return a handler fun
+	      
 	      (let ((reqmethod (request-method *request*))
 		    (parameters (parse-uri schema (request-uri *request*))))
 		(when (equal reqmethod 
@@ -126,8 +130,7 @@
 			 (funcall fun parameters)))
 		    (if (stringp result)
 			result
-			(format nil "~a" result)))))))))
-    dispatcher))
+			(format nil "~a" result))))))))))
     
 
 ;; A global rest table to be able to defrest on toplevel
