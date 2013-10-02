@@ -63,7 +63,7 @@ You can add defined webservices to hunchentoot in two different ways:
 
 
 
-== Tests
+## Tests
 
 The Test suite can be run automatically by asdf:
 
