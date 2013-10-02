@@ -68,7 +68,10 @@
 	   (is (equal "Hello Mr./Mrs. Freak"
 		      (drakma:http-request "http://localhost:9876/greet/Mr./Mrs.%20Freak")))
 	   (is (equal "3.0"
-		      (drakma:http-request "http://localhost:9876/post/9.data" :method :POST))))
+		      (drakma:http-request "http://localhost:9876/post/9.data" :method :POST)))
+	   (is (= 404
+		  (second (multiple-value-list 
+			   (drakma:http-request "http://localhost:9876/post/9.data" :method :GET))))))
       (stop server))))
       
 
