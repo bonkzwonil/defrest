@@ -86,7 +86,10 @@
     (loop for i in holders with n = -1 do
 	 (push i result)
 	 (push (nth (incf n) parameters) result))
-    (remove-if #'null (nreverse result))))
+    (remove-if #'(lambda (x)
+		   (or (null x)
+		       (= 0 (length x))))
+	       (nreverse result))))
 
 (defun parse-uri (schema uri)
   "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
@@ -103,7 +106,7 @@
 	     (let ((regexp (getf token :regexp))
 		   (key (getf token :key)))
 	       (multiple-value-bind (start end) (scan regexp uri)
-		 (setf (gethash key map) (subseq uri start end))
+		 (setf (gethash key map) (hunchentoot:url-decode (subseq uri start end)))
 		 (setf uri (subseq uri end))))
 	     (multiple-value-bind (start end) (scan token uri)  ;;else
 	       (declare (ignore start))
@@ -115,12 +118,12 @@
 (defun create-rest-dispatcher (schema method fun)
   "Creates a hunchentoot compatible dispatcher for a given url SCHEMA and request METHOD which will call the FUN function on match and hands over a parameter map hashtable"
   (let* ((uri (schema->regexpurl schema)))
-    #'(lambda (request)
+    #'(lambda (request) ;return a dispatcher...
 	(when (and
 	       (equal method
 		      (request-method request))
 	       (scan uri (request-uri request)))
-	  #'(lambda () ;return a handler fun
+	  #'(lambda () ;... which returns a handler fun on match (or nil
 	      
 	      (let ((reqmethod (request-method *request*))
 		    (parameters (parse-uri schema (request-uri *request*))))
@@ -140,8 +143,7 @@
 
 (defmacro defrest (pattern method varlist &body body)
   "Defines a new REST Method. It will listen to urls which match pattern, 
-   have all template blocks replaced and binds variables to varlist.
-   
+   have all template blocks replaced and binds variables to varlist.   
    Returns a dispatcher method, which can be put in the hunchentoot dispatcher 
    table AND creates an entry in the *rest-dispatcher-table* to be able to defrest 
    on toplevel.
