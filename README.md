@@ -63,6 +63,15 @@ You can add defined webservices to hunchentoot in two different ways:
 
 
 
+== Tests
+
+The Test suite can be run automatically by asdf:
+
+```lisp
+(asdf:oos 'asdf:test-op 'defrest)
+```
+
+
 
 See minimal-example.lisp  for exactly what its called
 
