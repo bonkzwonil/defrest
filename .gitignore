@@ -3,4 +3,4 @@
 #sbcl compiled files
 *.fasl
 \#*
-
+.\#*

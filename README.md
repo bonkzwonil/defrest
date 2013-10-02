@@ -67,6 +67,9 @@ You can add defined webservices to hunchentoot in two different ways:
 See minimal-example.lisp  for exactly what its called
 
 
+defrest was called defajax 
+
+
  Copyright (C) 2013 by Mathias Menzel-Nielsen
 
 
