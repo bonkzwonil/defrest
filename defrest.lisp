@@ -35,6 +35,7 @@
 
 (in-package :rest)
 
+#|
 (defun preparse-uri-parameters->map (schema)
   "Turns st. like 'bla/{id:[0-9]+}/{name:.+}' in a parameter->regexpmap hashtable"
   (let ((map (make-hash-table)))
@@ -44,6 +45,7 @@
 	(declare (ignore n/a))
 	(setf (gethash (aref found 0) map) (aref found 1))))
     map))
+|#
 
 (defun preparse-uri-parameters->list (schema)
   "Turns st. like 'bla/{id:[0-9]+}/{name:.+}' in a parameter->regexpmap list"
@@ -87,6 +89,7 @@
     (remove-if #'null (nreverse result))))
 
 (defun parse-uri (schema uri)
+  "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
   (when (not 
 	 (scan 
 	  (schema->regexpurl schema)
