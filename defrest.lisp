@@ -158,7 +158,7 @@
   (let ((letlist (mapcar #'(lambda (var)
 			     `(,var (gethash (symbol-name (quote ,var)) map)))
 			 varlist)))
-    `(setf (gethash ,pattern *rest-dispatcher-table*)
+    `(setf (gethash (cons ,method ,pattern) *rest-dispatcher-table*)
 	   (create-rest-dispatcher ,pattern ,method 
 				   (lambda (map)
 				     (declare (ignorable map)) ; we dont want a not-used warning on empty lambda-list defrest's
