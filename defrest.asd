@@ -6,7 +6,7 @@
 
 (defsystem :defrest
   :description "defrest: expose functions as REST webservices for ajax or other stuff"
-  :version "0.1"
+  :version "1"
   :author "Mathias Menzel-Nielsen <(reverse \"ed.tfosztam@eztam\")>" ;nospam
   :license "BSD"
   :depends-on (:hunchentoot
