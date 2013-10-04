@@ -45,9 +45,13 @@
 	   (hash-table-count result)))))
 
 (def-test test-real-hunchentoot ()
-  (let ((server (start (make-instance 'easy-acceptor :port 9876))))
-    (unwind-protect 
-	 (progn
+  (let* ((port 9876)
+	 (server (start (make-instance 'easy-acceptor :port port)))
+	 (baseurl (format nil "http://localhost:~a" port)))
+    (labels ((url (uri)
+	       (concatenate 'string baseurl uri)))
+      (unwind-protect 
+	  (progn
 	   (setq *dispatch-table* 
 		 (list (create-rest-table-dispatcher)))
 	   
@@ -62,17 +66,53 @@
 	     (sqrt (parse-integer number)))
 
 	   (is (equal "Hello World"
-		      (drakma:http-request "http://localhost:9876/simple")))
+		      (drakma:http-request (url "/simple"))))
 	   (is (equal "Hello Bonk"
-		      (drakma:http-request "http://localhost:9876/greet/Bonk")))
+		      (drakma:http-request (url "/greet/Bonk"))))
 	   (is (equal "Hello Mr./Mrs. Freak"
-		      (drakma:http-request "http://localhost:9876/greet/Mr./Mrs.%20Freak")))
+		      (drakma:http-request (url "/greet/Mr./Mrs.%20Freak"))))
 	   (is (equal "3.0"
-		      (drakma:http-request "http://localhost:9876/post/9.data" :method :POST)))
+		      (drakma:http-request (url "/post/9.data") :method :POST)))
 	   (is (= 404
 		  (second (multiple-value-list 
-			   (drakma:http-request "http://localhost:9876/post/9.data" :method :GET))))))
-      (stop server))))
+			   (drakma:http-request (url "/post/9.data") :method :GET)))))
+	   ;; Different Methods on same url should work, too
+
+	   (let ((db nil)
+		 (uri "/todo/{id:[0-9]+}" ))
+
+	     (defrest uri :GET (id)
+	       (let ((result (find id db :key #'car :test 'equal)))
+		 (if result
+		     (cdr result)
+		     (setf (return-code*) +http-not-found+))))
+
+	     (defrest uri :POST (id)
+	       (push (cons id 
+			   (raw-post-data :force-text T))
+		     db))
+
+	     (defrest uri :DELETE (id)
+	       (setf db (remove-if #'(lambda (x) (equal id x))
+			  db
+			  :key #'car))
+	       (setf (return-code*) +http-no-content+)))
+			  
+	   
+	   ;; Simple CRUD Test
+	   (is (= 404 
+		  (second (multiple-value-list (drakma:http-request (url "/todo/42") :method :GET)))))
+	   (is (= 200
+		  (second (multiple-value-list (drakma:http-request (url "/todo/42") :method :POST :content "Sample Item" :external-format-out :ASCII :content-type "text/plain")))))
+	   (is (equal "Sample Item"
+		      (drakma:http-request (url "/todo/42") :method :GET)))
+	   (is (= +http-no-content+
+		  (second (multiple-value-list (drakma:http-request (url "/todo/42") :method :DELETE)))))
+	   (is (= 404 
+		  (second (multiple-value-list (drakma:http-request (url "/todo/42") :method :GET))))))
+	     
+	     
+	(stop server)))))
       
 
 
