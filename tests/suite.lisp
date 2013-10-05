@@ -8,7 +8,7 @@
 (in-suite defrest-tests)
 
 
-(def-test testurlfiddling ()
+(test testurlfiddling ()
   (is (equal 
        "/test/[0-9]+/gna"
        (defrest::schema->regexpurl "/test/{id:[0-9]+}/gna")))
@@ -22,7 +22,7 @@
 		    :key #'(lambda (x) (getf x :key))
 		    :test #'equal)
 	      :regexp))))
-(def-test testparse ()
+(test testparse ()
   (let ((result (defrest::parse-schema "/test/{id:[a-z]}")))
     (is (= 2
 	   (length result)))
@@ -35,7 +35,7 @@
 	       (gethash "id" result)))
     (is (= 1
 	   (hash-table-count result)))))
-(def-test testuriparse ()
+(test testuriparse ()
   (let ((result (defrest::parse-uri "/test/{id:[0-5]}{name:.+}" "/test/3A%20B")))
     (is (equal "A B"
 	       (gethash "name" result)))
@@ -44,7 +44,7 @@
     (is (= 2
 	   (hash-table-count result)))))
 
-(def-test test-real-hunchentoot ()
+(test test-real-hunchentoot ()
   (let* ((port 9876)
 	 (server (start (make-instance 'easy-acceptor :port port)))
 	 (baseurl (format nil "http://localhost:~a" port)))
