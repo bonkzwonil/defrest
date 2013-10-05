@@ -70,6 +70,29 @@
 	   while cont?))
   schema)
       
+(defun split-template-blocks (uri)
+  "splits an uri to seperate the template placeholder blocks so that '/bla/{var:.+}' becomes ('/bla/' '{var:.+}')"
+  (labels ((rec (str start pos acc)
+	     (cond ((>= pos (length str))
+		    (nreverse
+		     (if (= pos start)
+			 acc
+			 (cons (subseq str start pos) acc))))
+		   ((equal #\{ (char str pos))
+		    (rec str 
+			 pos 
+			 (1+ pos) 
+			 (cons (subseq str start pos) acc)))
+		   ((equal #\} (char str pos))
+		    (rec str 
+			 (1+ pos) 
+			 (1+ pos) 
+			 (cons (subseq str start (1+ pos)) acc)))
+		   (t 
+		    (rec str start (1+ pos) acc)))))
+    (rec uri 0 0 nil)))
+	       
+    
 
 (defun split-on-placeholders (uri)
   "splits a sequence on the template placeholder blocks"
@@ -80,6 +103,7 @@
 
 
 (defun parse-schema (schema)
+  "Splits static uri parts and template blocks and replaces template blocks with their parsing"
   (let ((parameters (preparse-uri-parameters->list schema))
 	(holders (split-on-placeholders schema))
 	(result))
