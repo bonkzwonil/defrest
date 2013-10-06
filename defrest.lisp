@@ -35,63 +35,10 @@
 
 (in-package :rest)
 
-#|
-(defun preparse-uri-parameters->map (schema)
-  "Turns st. like 'bla/{id:[0-9]+}/{name:.+}' in a parameter->regexpmap hashtable"
-  (let ((map (make-hash-table)))
-    (do-matches-as-strings (match "{([^\{]+):([^\}]+)}*" schema) 
-      (multiple-value-bind (n/a found)
-	  (scan-to-strings "{(.+):(.+)}" match)
-	(declare (ignore n/a))
-	(setf (gethash (aref found 0) map) (aref found 1))))
-    map))
-
-(defun preparse-uri-parameters->list (schema)
-  "Turns st. like 'bla/{id:[0-9]+}/{name:.+}' in a parameter->regexpmap list"
-  (let ((lst))
-    (do-matches-as-strings (match "{([^\{]+):([^\}]+)}*" schema) 
-      (multiple-value-bind (n/a found)
-	  (scan-to-strings "{(.+):(.+)}" match)
-	(declare (ignore n/a))
-	(push (list :key (aref found 0) :regexp (aref found 1)) lst)))
-    (reverse lst)))
-
-      
-(defun split-template-blocks (uri)
-  "splits an uri to seperate the template placeholder blocks so that '/bla/{var:.+}' becomes ('/bla/' '{var:.+}')"
-  (labels ((rec (str start pos acc)
-	     (cond ((>= pos (length str))
-		    (nreverse
-		     (if (= pos start)
-			 acc
-			 (cons (subseq str start pos) acc))))
-		   ((equal #\{ (char str pos))
-		    (rec str 
-			 pos 
-			 (1+ pos) 
-			 (cons (subseq str start pos) acc)))
-		   ((equal #\} (char str pos))
-		    (rec str 
-			 (1+ pos) 
-			 (1+ pos) 
-			 (cons (subseq str start (1+ pos)) acc)))
-		   (t 
-		    (rec str start (1+ pos) acc)))))
-    (rec uri 0 0 nil)))
-|#
 
 (defun schema->regexpurl (schema)
   "rips out the template blocks and replaces them with their regexp part. eg: {id:[0-9]+} becomes [0-9]+"
-  (let ((parameters (preparse-uri-parameters->list schema))
-	(cont?))
-    (loop do
-	 (multiple-value-bind (result found?) 
-	     (regex-replace "{([^\{]+):([^\}]+)}" schema (getf (pop parameters) :regexp))
-	   (setf cont? found?)
-	   (setf schema result))
-	 
-	   while cont?))
-  schema)
+  (regex-replace-all "{([^\{]+):([^\}]+)}" schema "\\2"))
 
 #|
 (defun split-template-blocks (uri)
@@ -107,7 +54,9 @@
 	     (push (subseq uri start (setf start (1+ pos))) result)))
      finally 
        (return (nreverse result))))
+
 |#
+
 
 (defun split-sequence-on-positions (seq poslist)
   "Splits SEQ on all positions listed in POSLIST"
@@ -143,17 +92,8 @@
 	  (split-template-blocks schema))) 	
  
 	   
-#|
-(defun schema->regexpurl (parsedschema)
-  "rips out the template blocks and replaces them with their regexp part. eg: {id:[0-9]+} becomes [0-9]+"
-  (apply #'concatenate 'string
-	 (mapcar #'(lambda (x) (if (listp x)
-				   (getf x :regexp)
-				   x))
-		 parsedschema)))
-|#
 
-(defun parse-uri (schema uri)
+(Defun parse-uri (schema uri)
   "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
     (when (not 
 	   (scan 
