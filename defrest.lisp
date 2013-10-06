@@ -45,7 +45,6 @@
 	(declare (ignore n/a))
 	(setf (gethash (aref found 0) map) (aref found 1))))
     map))
-|#
 
 (defun preparse-uri-parameters->list (schema)
   "Turns st. like 'bla/{id:[0-9]+}/{name:.+}' in a parameter->regexpmap list"
@@ -57,18 +56,6 @@
 	(push (list :key (aref found 0) :regexp (aref found 1)) lst)))
     (reverse lst)))
 
-(defun schema->regexpurl (schema)
-  "rips out the template blocks and replaces them with their regexp part. eg: {id:[0-9]+} becomes [0-9]+"
-  (let ((parameters (preparse-uri-parameters->list schema))
-	(cont?))
-    (loop do
-	 (multiple-value-bind (result found?) 
-	     (regex-replace "{([^\{]+):([^\}]+)}" schema (getf (pop parameters) :regexp))
-	   (setf cont? found?)
-	   (setf schema result))
-	 
-	   while cont?))
-  schema)
       
 (defun split-template-blocks (uri)
   "splits an uri to seperate the template placeholder blocks so that '/bla/{var:.+}' becomes ('/bla/' '{var:.+}')"
@@ -91,41 +78,92 @@
 		   (t 
 		    (rec str start (1+ pos) acc)))))
     (rec uri 0 0 nil)))
-	       
-    
+|#
 
-(defun split-on-placeholders (uri)
-  "splits a sequence on the template placeholder blocks"
-  (let ((split-symbol #\U00046A76)) ;;could be anything
-    (split-sequence split-symbol 
-		    (regex-replace-all "{[^\{]+}" uri (format nil "~c" split-symbol)))))
-
-
-
-(defun parse-schema (schema)
-  "Splits static uri parts and template blocks and replaces template blocks with their parsing"
+(defun schema->regexpurl (schema)
+  "rips out the template blocks and replaces them with their regexp part. eg: {id:[0-9]+} becomes [0-9]+"
   (let ((parameters (preparse-uri-parameters->list schema))
-	(holders (split-on-placeholders schema))
-	(result))
-    (loop for i in holders with n = -1 do
-	 (push i result)
-	 (push (nth (incf n) parameters) result))
-    (remove-if #'(lambda (x)
-		   (or (null x)
-		       (= 0 (length x))))
-	       (nreverse result))))
+	(cont?))
+    (loop do
+	 (multiple-value-bind (result found?) 
+	     (regex-replace "{([^\{]+):([^\}]+)}" schema (getf (pop parameters) :regexp))
+	   (setf cont? found?)
+	   (setf schema result))
+	 
+	   while cont?))
+  schema)
+
+#|
+(defun split-template-blocks (uri)
+  "splits an uri to seperate the template placeholder blocks so that '/bla/{var:.+}' becomes ('/bla/' '{var:.+}'). loop version"
+  (loop for char across uri
+       with result
+       with start = 0
+       for pos from 0
+       do
+       (if (and (equal char #\{) (> pos start))
+	   (push (subseq uri start (setf start pos)) result)
+	   (when (equal char #\})
+	     (push (subseq uri start (setf start (1+ pos))) result)))
+     finally 
+       (return (nreverse result))))
+|#
+
+(defun split-sequence-on-positions (seq poslist)
+  "Splits SEQ on all positions listed in POSLIST"
+  (let ((poslist (sort poslist #'<))) ;needs to be sorted
+    (unless (member (length seq) poslist)
+      (setf poslist (append poslist (list (length seq)))))  ; and we need a finishing move
+    (loop for pos in poslist  ; now its simple
+       with start = 0
+       collect (subseq seq start (setf start pos)))))
+
+(defun mark-template-splitpoints (schema)
+  "Returns a list of all split positions to seperate templateblocks in SCHEMA."
+  (remove-duplicates ;nah, we dont want empty strings
+    (loop for char across schema
+     for pos from 0
+       when (member char '(#\{ #\}))
+     collect (+ pos
+		(if (eq char #\}) 1 0)))))
+
+(defun split-template-blocks (uri)
+  "splits an template uri to seperate the template placeholder blocks so that '/bla/{var:.+}' becomes ('/bla/' '{var:.+}'). best version"
+  (split-sequence-on-positions uri (mark-template-splitpoints uri)))
+
+
+(defun parse-schema  (schema)
+  (mapcar #'(lambda (x)
+	      (if (scan "{.+:.+}" x)
+		  (multiple-value-bind (n/a found)
+		      (scan-to-strings "{(.+):(.+)}" x)
+		    (declare (ignorable n/a))
+		    (list :key (aref found 0) :regexp (aref found 1)))
+		  x))
+	  (split-template-blocks schema))) 	
+ 
+	   
+#|
+(defun schema->regexpurl (parsedschema)
+  "rips out the template blocks and replaces them with their regexp part. eg: {id:[0-9]+} becomes [0-9]+"
+  (apply #'concatenate 'string
+	 (mapcar #'(lambda (x) (if (listp x)
+				   (getf x :regexp)
+				   x))
+		 parsedschema)))
+|#
 
 (defun parse-uri (schema uri)
   "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
-  (when (not 
-	 (scan 
-	  (schema->regexpurl schema)
-	  uri))
-    (error "Uri does not match schema"))
-  (let ((parsed (parse-schema schema))
-	(map (make-hash-table :test #'equalp)))
-	
-    (loop for token in parsed do
+    (when (not 
+	   (scan 
+	    (schema->regexpurl schema)
+	    uri))
+      (error "Uri does not match schema"))
+    (let ((parsed (parse-schema schema))
+	  (map (make-hash-table :test #'equalp)))
+ 
+     (loop for token in parsed do
 	 (if (listp token)
 	     (let ((regexp (getf token :regexp))
 		   (key (getf token :key)))
