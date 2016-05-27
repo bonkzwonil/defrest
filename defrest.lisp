@@ -82,6 +82,21 @@
 
 
 (defun parse-schema  (schema)
+  "splits a schema into blocks representing it's static parts and it's placeholders.
+
+Example 1:
+'/test/{id:[a-z]+}' => ('/test/' (:KEY 'id' :REGEXP '[a-z]+'))
+
+Example 2:
+'/test/{id:[a-z]?[0-9]+}' => ('/test/' (:KEY 'id' :REGEXP '[a-z]?[0-9]+'))
+
+Example 3:
+'/album/{album:[a-z]+}/track/{track:[0-9]+}' => ('/album/' (:KEY 'album' :REGEXP '[a-z]+') '/track/' (:KEY 'track' :REGEXP '[0-9]+'))
+
+Example 4:
+'/album/{album:[a-z]+}/track/{vol:[0-9]+}-{pos:[0-9]+}' => ('/album/' (:KEY 'album' :REGEXP '[a-z]+') '/track/'
+ (:KEY 'vol' :REGEXP '[0-9]+') '-' (:KEY 'pos' :REGEXP '[0-9]+'))
+"
   (mapcar #'(lambda (x)
 	      (if (scan "{.+:.+}" x)
 		  (multiple-value-bind (n/a found)
