@@ -31,7 +31,7 @@
 (defpackage defrest 
   (:use :cl :hunchentoot :cl-ppcre :split-sequence) 
   (:nicknames rest)
-  (:export defrest create-rest-table-dispatcher undefrest))
+  (:export defrest create-rest-table-dispatcher undefrest start easy-acceptor))
 
 (in-package :rest)
 
