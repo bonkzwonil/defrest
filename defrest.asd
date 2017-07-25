@@ -24,4 +24,4 @@
   
 
 (defmethod perform ((op test-op) (c (eql (find-system :defrest.test))))
-  (funcall (intern (symbol-name '#:run!) :it.bese.FiveAM)))
+  (funcall (intern (symbol-name '#:run-all-tests) :it.bese.FiveAM)))
