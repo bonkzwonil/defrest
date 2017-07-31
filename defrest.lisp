@@ -110,6 +110,8 @@ Example 4:
 
 (Defun parse-uri (schema uri)
   "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
+  (let ((parsed-uri (quri:uri (hunchentoot:url-decode uri))))
+    (setf uri (quri:uri-path parsed-uri))
     (when (not 
 	   (scan 
 	    (schema->regexpurl schema)
@@ -117,18 +119,17 @@ Example 4:
       (error "Uri does not match schema"))
     (let ((parsed (parse-schema schema))
 	  (map (make-hash-table :test #'equalp)))
- 
-     (loop for token in parsed do
+    (loop for token in parsed do
 	 (if (listp token)
 	     (let ((regexp (getf token :regexp))
 		   (key (getf token :key)))
 	       (multiple-value-bind (start end) (scan regexp uri)
-		 (setf (gethash key map) (hunchentoot:url-decode (subseq uri start end)))
+		 (setf (gethash key map) (subseq uri start end))
 		 (setf uri (subseq uri end))))
 	     (multiple-value-bind (start end) (scan token uri)  ;;else
 	       (declare (ignore start))
 	       (setf uri (subseq uri end)))))
-    map))
+    map)))
   
 
     

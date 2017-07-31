@@ -33,6 +33,14 @@
 	       (gethash "id" result)))
     (is (= 2
 	   (hash-table-count result)))))
+(test testuriparse-with-query-params ()
+  (let ((result (defrest::parse-uri "/test/{id:[0-5]}{name:.+}" "/test/3A%20B?nickname=Freako")))
+    (is (equal "A B"
+	       (gethash "name" result)))
+    (is (equal "3"
+	       (gethash "id" result)))
+    (is (= 2
+	   (hash-table-count result)))))
 
 (test test-real-hunchentoot ()
   (let* ((port 9876)
@@ -59,6 +67,8 @@
 		      (drakma:http-request (url "/simple"))))
 	   (is (equal "Hello Bonk"
 		      (drakma:http-request (url "/greet/Bonk"))))
+	   (is (equal "Hello Bonk"
+		      (drakma:http-request (url "/greet/Bonk?nickname=Freako"))))
 	   (is (equal "Hello Mr./Mrs. Freak"
 		      (drakma:http-request (url "/greet/Mr./Mrs.%20Freak"))))
 	   (is (equal "3.0"

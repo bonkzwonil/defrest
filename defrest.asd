@@ -11,7 +11,8 @@
   :license "BSD"
   :depends-on (:hunchentoot
 	       :cl-ppcre
-	       :split-sequence)
+	       :split-sequence
+	       :quri)
   :in-order-to ((test-op (test-op "defrest.test")))
   :components ((:static-file "defrest.asd")
 	       (:file "defrest")))
