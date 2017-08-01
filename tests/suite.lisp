@@ -59,7 +59,10 @@
 	   
 	   (defrest "/greet/{name:.+}" :GET (name)
 	     (concatenate 'string "Hello " name))
-	   
+
+	   (defrest "/greetquery/{name:.+}" :GET (name :query (nickname nil))
+	     (format nil "Hello ~a! Your nickname is ~a" name nickname))
+
 	   (defrest "/post/{number:[0-9]+}.data" :POST (number)
 	     (sqrt (parse-integer number)))
 
@@ -67,6 +70,10 @@
 		      (drakma:http-request (url "/simple"))))
 	   (is (equal "Hello Bonk"
 		      (drakma:http-request (url "/greet/Bonk"))))
+	   
+	   (is (equal "Hello Bonk! Your nickname is Zausel"
+		      (drakma:http-request (url "/greetquery/Bonk?nickname=Freako"))))
+	   
 	   (is (equal "Hello Bonk"
 		      (drakma:http-request (url "/greet/Bonk?nickname=Freako"))))
 	   (is (equal "Hello Mr./Mrs. Freak"

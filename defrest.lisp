@@ -109,7 +109,7 @@ Example 4:
 	   
 
 (Defun parse-uri (schema uri)
-  "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings"
+  "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings and the query parameters"
   (let ((parsed-uri (quri:uri (hunchentoot:url-decode uri))))
     (setf uri (quri:uri-path parsed-uri))
     (when (not 
@@ -131,10 +131,8 @@ Example 4:
 	       (setf uri (subseq uri end)))))
     (values map (quri:uri-query-params parsed-uri)))))
   
-
-    
-(defun create-rest-dispatcher (schema method fun)
-  "Creates a hunchentoot compatible dispatcher for a given url SCHEMA and request METHOD which will call the FUN function on match and hands over a parameter map hashtable"
+(defun create-rest-dispatcher (schema method query-param-schemes fun)
+  "Creates a hunchentoot compatible dispatcher for a given url SCHEMA, request METHOD and QUERY-PARAM-Schemes which will call the FUN function on match and hands over a parameter map hashtable"
   (let* ((uri (schema->regexpurl schema)))
     #'(lambda (request) ;return a dispatcher...
 	(when (and
@@ -142,22 +140,42 @@ Example 4:
 		      (request-method request))
 	       (scan uri (request-uri request)))
 	  #'(lambda () ;... which returns a handler fun on match (or nil
-	      
-	      (let ((reqmethod (request-method *request*))
-		    (parameters (parse-uri schema (request-uri *request*))))
-		(when (equal reqmethod 
-			     method)
-		  (let ((result
-			 (funcall fun parameters)))
-		    (if (stringp result)
-			result
-			(format nil "~a" result))))))))))
+	      (let ((reqmethod (request-method *request*)))
+		(multiple-value-bind (parameters request-query-params) (parse-uri schema (request-uri *request*))
+		  (when (equal reqmethod 
+			       method)
+		    ;; Add query parameter values to hash
+		    ;; TODO: Exception handling. Reply 400 if error is signalled by evaluation function
+		    (dolist (qp query-param-schemes)
+		      (setf (gethash (symbol-name (first qp)) parameters) (funcall (second qp) request-query-params)))
+		    (let ((result
+			   (funcall fun parameters)))
+		      (if (stringp result)
+			  result
+			  (format nil "~a" result)))))))))))
     
 
 ;; A global rest table to be able to defrest on toplevel
 (defvar *rest-dispatcher-table* (make-hash-table :test 'equal))
 
+(defun create-query-param-parser (query-param-def)
+  "Parses query-param-def and returns a function which determines the value of
+the query parameter (the binding) out of a given list of the query parameters of the current request"
+  (declare (ignore query-param-def))
+  (lambda (request-query-params)
+    (declare (ignore request-query-params))
+    "Zausel"))
 
+(defun parse-varlist (varlist)
+  "Parses the varlist and returns a list of all bindings and a list 
+of the bindings that are mapped to query parameters."
+  (let* ((splitted (split-sequence :query varlist))
+	 (query-params nil)
+	 (bindings (copy-seq (first splitted))))
+    (dolist (qp (second splitted))
+      (push (first qp) bindings)
+      (push (list (first qp) (create-query-param-parser (rest qp))) query-params))
+    (values bindings query-params)))
 
 (defmacro defrest (pattern method varlist &body body)
   "Defines a new REST Method. It will listen to urls which match pattern, 
@@ -173,15 +191,16 @@ Example 4:
 
    will create a Hello World Dispatcher which will greet GET /greet/Bonk with 'Hello Bonk'"
 
-  (let ((letlist (mapcar #'(lambda (var)
+  (multiple-value-bind (bindings query-param-schemes) (parse-varlist varlist)
+    (let ((letlist (mapcar #'(lambda (var)
 			     `(,var (gethash (symbol-name (quote ,var)) map)))
-			 varlist)))
+			   bindings)))
     `(setf (gethash (cons ,method ,pattern) *rest-dispatcher-table*)
-	   (create-rest-dispatcher ,pattern ,method 
+	   (create-rest-dispatcher ,pattern ,method ',query-param-schemes 
 				   (lambda (map)
 				     (declare (ignorable map)) ; we dont want a not-used warning on empty lambda-list defrest's
 				     (let ,letlist
-				       ,@body))))))
+				       ,@body)))))))
 			     
 
 
