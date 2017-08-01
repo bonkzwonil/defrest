@@ -129,7 +129,7 @@ Example 4:
 	     (multiple-value-bind (start end) (scan token uri)  ;;else
 	       (declare (ignore start))
 	       (setf uri (subseq uri end)))))
-    map)))
+    (values map (quri:uri-query-params parsed-uri)))))
   
 
     
