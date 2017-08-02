@@ -158,13 +158,36 @@ Example 4:
 ;; A global rest table to be able to defrest on toplevel
 (defvar *rest-dispatcher-table* (make-hash-table :test 'equal))
 
-(defun create-query-param-parser (query-param-def)
-  "Parses query-param-def and returns a function which determines the value of
-the query parameter (the binding) out of a given list of the query parameters of the current request"
-  (declare (ignore query-param-def))
-  (lambda (request-query-params)
-    (declare (ignore request-query-params))
-    "Zausel"))
+(defun create-query-param-parser (binding &key (mandatory nil) (pattern nil) (param nil) (default nil) &allow-other-keys)
+  "Compiles the query definition into a function that is to be called with the query parameters
+of the current request and returns the value of the query parameter"
+  (let ((query-param-name (if param param (symbol-name binding))))
+    (lambda (request-query-params)
+      (let ((qp-value
+	     (cdr
+	      (assoc
+	       query-param-name
+	       request-query-params
+	       :test (lambda (a b)
+		       (string= (string-upcase a) (string-upcase b)))))))
+	(cond
+	  ((and qp-value pattern)
+	   (when (not 
+		  (scan 
+		   pattern qp-value))
+	     (error (make-condition
+		     'hunchentoot:bad-request
+		     :format-control "Request validation failed: Query parameter ~a does not match pattern ~a"
+		     :format-arguments (list (symbol-name binding) pattern))))
+	   qp-value)
+	  ((and (not qp-value) mandatory)
+	   (error (make-condition
+		   'hunchentoot:bad-request
+		   :format-control "Request validation failed: Query parameter ~a is mandatory"
+		   :format-arguments (list (symbol-name binding)))))
+	  ((and (not qp-value) default)
+	   default)
+	  (t qp-value))))))
 
 (defun parse-varlist (varlist)
   "Parses the varlist and returns a list of all bindings and a list 
@@ -173,8 +196,10 @@ of the bindings that are mapped to query parameters."
 	 (query-params nil)
 	 (bindings (copy-seq (first splitted))))
     (dolist (qp (second splitted))
+      (if (not (listp qp))
+	  (setf qp (list qp)))
       (push (first qp) bindings)
-      (push (list (first qp) (create-query-param-parser (rest qp))) query-params))
+      (push (list (first qp) (apply #'create-query-param-parser qp)) query-params))
     (values bindings query-params)))
 
 (defmacro defrest (pattern method varlist &body body)
