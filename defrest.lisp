@@ -161,7 +161,8 @@ Example 4:
 (defun create-query-param-parser (binding &key (mandatory nil) (pattern nil) (param nil) (default nil) &allow-other-keys)
   "Compiles the query definition into a function that is to be called with the query parameters
 of the current request and returns the value of the query parameter"
-  (let ((query-param-name (if param param (symbol-name binding))))
+  (let ((query-param-name (if param param (symbol-name binding)))
+	(scanner (if pattern (cl-ppcre:create-scanner pattern) nil)))
     (lambda (request-query-params)
       (let ((qp-value
 	     (cdr
@@ -171,10 +172,9 @@ of the current request and returns the value of the query parameter"
 	       :test (lambda (a b)
 		       (string= (string-upcase a) (string-upcase b)))))))
 	(cond
-	  ((and qp-value pattern)
+	  ((and qp-value scanner)
 	   (when (not 
-		  (scan 
-		   pattern qp-value))
+		  (scan scanner qp-value))
 	     (error (make-condition
 		     'hunchentoot:bad-request
 		     :format-control "Request validation failed: Query parameter ~a does not match pattern ~a"
