@@ -109,7 +109,7 @@ Example 4:
 	   
 
 (Defun parse-uri (schema uri)
-  "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings and the query parameters"
+  "Parses URI against SCHEMA and returns a hashtable with all pathvariable bindings and as second value the query parameters"
   (let ((parsed-uri (quri:uri (hunchentoot:url-decode uri))))
     (setf uri (quri:uri-path parsed-uri))
     (when (not 

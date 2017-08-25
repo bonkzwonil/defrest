@@ -33,13 +33,17 @@
     (is (= 2
 	   (hash-table-count result)))))
 (test testuriparse-with-query-params ()
-  (let ((result (defrest::parse-uri "/test/{id:[0-5]}{name:.+}" "/test/3A%20B?nickname=Freako")))
+  (multiple-value-bind (result query) (defrest::parse-uri "/test/{id:[0-5]}{name:.+}" "/test/3A%20B?nickname=Freako")
     (is (equal "A B"
 	       (gethash "name" result)))
     (is (equal "3"
 	       (gethash "id" result)))
     (is (= 2
-	   (hash-table-count result)))))
+	   (hash-table-count result)))
+    (is (= 1
+	   (length query)))
+    (is (string= "nickname" (car (first query))))
+    (is (string= "Freako" (cdr (first query))))))
 
 (test test-real-hunchentoot ()
   (let* ((port 9876)
