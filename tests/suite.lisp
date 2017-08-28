@@ -66,6 +66,9 @@
 	   (defrest "/greetquery/{name:.+}" :GET (name :query nickname age)
 	     (format nil "Hello ~a! Your nickname is ~a and your age is ~a" name nickname age))
 
+	   (defrest "/greetqueryonly" :GET (:query name)
+	     (format nil "Hello ~a" name))
+	   
 	   (defrest "/greetquerymandatory/{name:.+}" :GET (name :query (nickname :mandatory t))
 	     (format nil "Hello ~a! Your nickname is ~a" name nickname))
 
@@ -77,7 +80,7 @@
 
 	   (defrest "/greetqueryparam/{name:.+}" :GET (name :query nickname (age :param "queryage" :pattern "[0-9]+"))
 	     (format nil "Hello ~a! Your nickname is ~a and your age is ~a" name nickname age))
-	   
+
 	   (defrest "/post/{number:[0-9]+}.data" :POST (number)
 	     (sqrt (parse-integer number)))
 
@@ -85,6 +88,8 @@
 		      (drakma:http-request (url "/simple"))))
 	   (is (equal "Hello Bonk"
 		      (drakma:http-request (url "/greet/Bonk"))))
+	   (is (equal "Hello Bonk"
+		      (drakma:http-request (url "/greetqueryonly?name=Bonk"))))
 	   (is (equal "Hello Bonk! Your nickname is Freako and your age is NIL"
 		      (drakma:http-request (url "/greetquery/Bonk?nickname=Freako"))))
 	   (is (equal "Hello Bonk! Your nickname is Freako and your age is 21"
