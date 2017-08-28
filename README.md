@@ -65,12 +65,14 @@ Query-Parameter examples:
 ```
 
 ```lisp
-(defrest "/songs/{album-id:[0-9]+}" :GET (album-id :query (offset :default "0") (limit :mandatory t :pattern "[0-9]+"))
+(defrest "/songs/{album-id:[0-9]+}" :GET (album-id :query (offset :default "0") 
+    (limit :mandatory t :pattern "[0-9]+"))
         (get-songs album-id offset limit))
 ```
 
 ```lisp
-(defrest "/songs/{album-id:[0-9]+}" :GET (album-id :query (offset :default "0") (count :mandatory t :param "limit"))
+(defrest "/songs/{album-id:[0-9]+}" :GET (album-id :query (offset :default "0") 
+    (count :mandatory t :param "limit"))
         (get-songs album-id offset count))
 ```
 
