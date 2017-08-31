@@ -11,7 +11,8 @@
   :license "BSD"
   :depends-on (:hunchentoot
 	       :cl-ppcre
-	       :split-sequence)
+	       :split-sequence
+	       :quri)
   :in-order-to ((test-op (test-op "defrest.test")))
   :components ((:static-file "defrest.asd")
 	       (:file "defrest")))
@@ -24,4 +25,4 @@
   
 
 (defmethod perform ((op test-op) (c (eql (find-system :defrest.test))))
-  (funcall (intern (symbol-name '#:run!) :it.bese.FiveAM)))
+  (funcall (intern (symbol-name '#:run-all-tests) :it.bese.FiveAM)))
