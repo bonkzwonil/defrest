@@ -199,7 +199,7 @@ of the bindings that are mapped to query parameters."
       (if (not (listp qp))
 	  (setf qp (list qp)))
       (push (first qp) bindings)
-      (push (list (first qp) (apply #'create-query-param-parser qp)) query-params))
+      (push qp query-params))
     (values bindings query-params)))
 
 (defmacro defrest (pattern method varlist &body body)
@@ -216,17 +216,20 @@ of the bindings that are mapped to query parameters."
 
    will create a Hello World Dispatcher which will greet GET /greet/Bonk with 'Hello Bonk'"
 
-  (multiple-value-bind (bindings query-param-schemes) (parse-varlist varlist)
+  (multiple-value-bind (bindings query-params) (parse-varlist varlist)
     (let ((letlist (mapcar #'(lambda (var)
 			     `(,var (gethash (symbol-name (quote ,var)) map)))
 			   bindings)))
     `(setf (gethash (cons ,method ,pattern) *rest-dispatcher-table*)
-	   (create-rest-dispatcher ,pattern ,method ',query-param-schemes 
-				   (lambda (map)
-				     (declare (ignorable map)) ; we dont want a not-used warning on empty lambda-list defrest's
-				     (let ,letlist
-				       ,@body)))))))
-			     
+	   (create-rest-dispatcher ,pattern ,method
+				   (mapcar (lambda (x)
+					     (list (first x) (apply #'create-query-param-parser x)))
+					   ',query-params)
+				     (lambda (map)
+				       (declare (ignorable map)) ; we dont want a not-used warning on empty lambda-list defrest's
+				       (let ,letlist
+					 ,@body)))))))
+
 
 
 (defun undefrest (pattern)
